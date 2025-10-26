@@ -1,0 +1,2943 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAME - HOSP. DE URGÊNCIA DE GOIÁS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <!-- Google API -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #1abc9c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            min-height: 100vh;
+            padding: 0;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: var(--light-color);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .tab-content {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            background-color: white;
+        }
+        
+        .dashboard-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .dashboard-card i {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        
+        .dashboard-card h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .dashboard-card p {
+            color: var(--dark-color);
+            margin-bottom: 0;
+        }
+        
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .action-buttons .btn {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .hospital-header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .auto-field {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .badge {
+            font-size: 0.8em;
+        }
+        
+        /* Melhorias para responsividade */
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+                position: fixed;
+                width: 100%;
+                z-index: 1000;
+                height: 60px;
+                overflow-y: auto;
+            }
+            
+            .sidebar .nav-pills {
+                flex-direction: row !important;
+                overflow-x: auto;
+            }
+            
+            .sidebar .nav-item {
+                flex-shrink: 0;
+            }
+            
+            .main-content {
+                margin-top: 60px;
+                padding: 10px;
+            }
+            
+            .hospital-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .dashboard-card h3 {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Feedback visual para validação */
+        .is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+        
+        .invalid-feedback {
+            display: block;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875em;
+            color: #dc3545;
+        }
+        
+        /* Melhorias para acessibilidade */
+        .btn:focus, .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Animações suaves */
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Estilo para mensagens de alerta */
+        .alert-custom {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+
+        /* Status da conexão */
+        .connection-status {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+
+        .connection-online {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .connection-offline {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <!-- Status da Conexão -->
+    <div id="connectionStatus" class="connection-status" style="display: none;">
+        <i class="fas fa-circle me-1"></i>
+        <span id="connectionText">Conectando...</span>
+    </div>
+
+    <!-- Tela de Login -->
+    <div id="loginScreen" class="container">
+        <div class="login-container">
+            <div class="hospital-header text-center mb-4">
+                <h2><i class="fas fa-hospital-alt me-2"></i>SAME</h2>
+                <p class="mb-0">HOSP. DE URGÊNCIA DE GOIÁS</p>
+            </div>
+            <div class="alert alert-info mb-3">
+                <small>
+                    <i class="fas fa-info-circle me-1"></i>
+                    Sistema integrado com Google Sheets. Os dados serão sincronizados automaticamente.
+                </small>
+            </div>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="loginUser" class="form-label">Usuário</label>
+                    <input type="text" class="form-control" id="loginUser" required>
+                </div>
+                <div class="mb-3">
+                    <label for="loginPassword" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sistema Principal (inicialmente oculto) -->
+    <div id="mainSystem" class="container-fluid" style="display: none;">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-4">
+                    <div class="text-center w-100 mb-4">
+                        <h5><i class="fas fa-hospital-alt me-2"></i>SAME</h5>
+                        <small>HOSP. DE URGÊNCIA DE GOIÁS</small>
+                    </div>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start w-100" id="menu">
+                        <!-- Menu do Usuário -->
+                        <div id="userMenu">
+                            <li class="nav-item w-100">
+                                <a href="#formulario" class="nav-link active" data-bs-toggle="tab">
+                                    <i class="fas fa-edit"></i> Formulário
+                                </a>
+                            </li>
+                            <li class="nav-item w-100">
+                                <a href="#acompanhamento" class="nav-link" data-bs-toggle="tab">
+                                    <i class="fas fa-search"></i> Acompanhamento
+                                </a>
+                            </li>
+                            <li class="nav-item w-100">
+                                <a href="#todosRegistros" class="nav-link" data-bs-toggle="tab">
+                                    <i class="fas fa-list"></i> Todos os Registros
+                                </a>
+                            </li>
+                            <li class="nav-item w-100">
+                                <a href="#" class="nav-link" id="logoutBtn">
+                                    <i class="fas fa-sign-out-alt"></i> Sair
+                                </a>
+                            </li>
+                        </div>
+                        
+                        <!-- Menu do Administrador -->
+                        <div id="adminMenu" style="display: none;">
+                            <li class="nav-item w-100">
+                                <a href="#cadastroUsuario" class="nav-link" data-bs-toggle="tab">
+                                    <i class="fas fa-user-plus"></i> Cadastro de Usuário
+                                </a>
+                            </li>
+                            <li class="nav-item w-100">
+                                <a href="#cadastroOpcoes" class="nav-link" data-bs-toggle="tab">
+                                    <i class="fas fa-cog"></i> Cadastrar Opções
+                                </a>
+                            </li>
+                            <li class="nav-item w-100">
+                                <a href="#relatorio" class="nav-link" data-bs-toggle="tab">
+                                    <i class="fas fa-chart-bar"></i> Relatório
+                                </a>
+                            </li>
+                            <li class="nav-item w-100">
+                                <a href="#historicoUsuario" class="nav-link" data-bs-toggle="tab">
+                                    <i class="fas fa-history"></i> Histórico do Usuário
+                                </a>
+                            </li>
+                            <li class="nav-item w-100">
+                                <a href="#" class="nav-link" id="adminLogoutBtn">
+                                    <i class="fas fa-sign-out-alt"></i> Sair
+                                </a>
+                            </li>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Conteúdo Principal -->
+            <div class="col-md-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 id="pageTitle">Formulário de Solicitação</h3>
+                    <div class="d-flex align-items-center">
+                        <span id="userInfo" class="me-3"></span>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="helpBtn">
+                                <i class="fas fa-question-circle"></i> Ajuda
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-sm" id="syncBtn">
+                                <i class="fas fa-sync-alt"></i> Sincronizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo das Abas -->
+                <div class="tab-content">
+                    <!-- Aba 1: Formulário de Solicitação -->
+                    <div class="tab-pane fade show active" id="formulario">
+                        <form id="solicitacaoForm">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h5 class="mb-3" style="color: var(--primary-color);">Informações da Solicitação</h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="ano" class="form-label">Ano</label>
+                                            <input type="text" class="form-control auto-field" id="ano" readonly>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="mes" class="form-label">Mês</label>
+                                            <input type="text" class="form-control auto-field" id="mes" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="dataSolicitacao" class="form-label">Data da Solicitação</label>
+                                        <input type="date" class="form-control" id="dataSolicitacao" required>
+                                        <div class="invalid-feedback">Por favor, informe a data da solicitação.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="canalSolicitacao" class="form-label">Canal de Solicitação</label>
+                                        <select class="form-select" id="canalSolicitacao" required>
+                                            <option value="">Selecione...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Por favor, selecione o canal de solicitação.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="motivo" class="form-label">Motivo</label>
+                                        <select class="form-select" id="motivo" required>
+                                            <option value="">Selecione...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Por favor, selecione o motivo.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="docSolicitado" class="form-label">Doc. Solicitado</label>
+                                        <select class="form-select" id="docSolicitado" required>
+                                            <option value="">Selecione...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Por favor, selecione o documento solicitado.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Período Solicitado</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <input type="date" class="form-control" id="periodoInicial" required>
+                                                <div class="invalid-feedback">Por favor, informe a data inicial.</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="date" class="form-control" id="periodoFinal" required>
+                                                <div class="invalid-feedback">Por favor, informe a data final.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h5 class="mb-3" style="color: var(--primary-color);">Informações do Paciente</h5>
+                                    
+                                    <div class="mb-3">
+                                        <label for="nomePaciente" class="form-label">Nome do Paciente</label>
+                                        <input type="text" class="form-control" id="nomePaciente" required>
+                                        <div class="invalid-feedback">Por favor, informe o nome do paciente.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="nomeMae" class="form-label">Nome da Mãe</label>
+                                        <input type="text" class="form-control" id="nomeMae" required>
+                                        <div class="invalid-feedback">Por favor, informe o nome da mãe.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="dataNascimento" class="form-label">Data de Nascimento</label>
+                                        <input type="date" class="form-control" id="dataNascimento" required>
+                                        <div class="invalid-feedback">Por favor, informe a data de nascimento.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="telefone" class="form-label">Telefone de Contato</label>
+                                        <input type="tel" class="form-control" id="telefone" required>
+                                        <div class="invalid-feedback">Por favor, informe o telefone de contato.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="requerente" class="form-label">Requerente</label>
+                                        <input type="text" class="form-control" id="requerente" required>
+                                        <div class="invalid-feedback">Por favor, informe o requerente.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="formaRetirada" class="form-label">Forma de Retirada</label>
+                                        <select class="form-select" id="formaRetirada" required>
+                                            <option value="">Selecione...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Por favor, selecione a forma de retirada.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">E-mail</label>
+                                        <input type="email" class="form-control" id="email">
+                                        <div class="invalid-feedback">Por favor, informe um e-mail válido.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="statusSolicitacao" class="form-label">Status da Solicitação</label>
+                                        <select class="form-select" id="statusSolicitacao" required>
+                                            <option value="">Selecione...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Por favor, selecione o status da solicitação.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="dataRetirada" class="form-label">Data da Retirada</label>
+                                        <input type="date" class="form-control" id="dataRetirada">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="observacao" class="form-label">Observação</label>
+                                        <textarea class="form-control" id="observacao" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="reset" class="btn btn-outline-secondary me-2">Limpar</button>
+                                <button type="submit" class="btn btn-primary">Salvar Solicitação</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Aba 2: Acompanhamento -->
+                    <div class="tab-pane fade" id="acompanhamento">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Filtros de Pesquisa</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="filtroForm">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="filtroData" class="form-label">Data da Solicitação</label>
+                                            <input type="date" class="form-control" id="filtroData">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="filtroNome" class="form-label">Nome do Paciente</label>
+                                            <input type="text" class="form-control" id="filtroNome">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="filtroStatus" class="form-label">Status</label>
+                                            <select class="form-select" id="filtroStatus">
+                                                <option value="">Todos os status</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="filtroMotivo" class="form-label">Motivo</label>
+                                            <select class="form-select" id="filtroMotivo">
+                                                <option value="">Todos os motivos</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="filtroCanal" class="form-label">Canal de Solicitação</label>
+                                            <select class="form-select" id="filtroCanal">
+                                                <option value="">Todos os canais</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="filtroDoc" class="form-label">Documento Solicitado</label>
+                                            <select class="form-select" id="filtroDoc">
+                                                <option value="">Todos os documentos</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-primary">Pesquisar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Resultados da Pesquisa</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Data Solicitação</th>
+                                                <th>Nome do Paciente</th>
+                                                <th>Nome da Mãe</th>
+                                                <th>Motivo</th>
+                                                <th>Status</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="resultadosTabela">
+                                            <!-- Os resultados serão preenchidos via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba 3: Todos os Registros (Usuário) -->
+                    <div class="tab-pane fade" id="todosRegistros">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Todos os Registros</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Data Solicitação</th>
+                                                <th>Nome do Paciente</th>
+                                                <th>Nome da Mãe</th>
+                                                <th>Motivo</th>
+                                                <th>Status</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="todosRegistrosTabela">
+                                            <!-- Os registros serão preenchidos via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba 4: Cadastro de Usuário (Admin) -->
+                    <div class="tab-pane fade" id="cadastroUsuario">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Cadastro de Novo Usuário</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="cadastroUsuarioForm">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="nomeCompleto" class="form-label">Nome Completo</label>
+                                            <input type="text" class="form-control" id="nomeCompleto" required>
+                                            <div class="invalid-feedback">Por favor, informe o nome completo.</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="novoUsuario" class="form-label">Usuário</label>
+                                            <input type="text" class="form-control" id="novoUsuario" required>
+                                            <div class="invalid-feedback">Por favor, informe o nome de usuário.</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="novaSenha" class="form-label">Senha</label>
+                                            <input type="password" class="form-control" id="novaSenha" required>
+                                            <div class="invalid-feedback">Por favor, informe a senha.</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="confirmarSenha" class="form-label">Confirmar Senha</label>
+                                            <input type="password" class="form-control" id="confirmarSenha" required>
+                                            <div class="invalid-feedback">Por favor, confirme a senha.</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="novoEmail" class="form-label">E-mail</label>
+                                        <input type="email" class="form-control" id="novoEmail" required>
+                                        <div class="invalid-feedback">Por favor, informe um e-mail válido.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="tipoUsuario" class="form-label">Tipo de Usuário</label>
+                                        <select class="form-select" id="tipoUsuario" required>
+                                            <option value="user">Usuário Comum</option>
+                                            <option value="admin">Administrador</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-primary">Cadastrar Usuário</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Usuários Cadastrados</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome Completo</th>
+                                                <th>Usuário</th>
+                                                <th>E-mail</th>
+                                                <th>Tipo</th>
+                                                <th>Data de Cadastro</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabelaUsuarios">
+                                            <!-- Os usuários serão preenchidos via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba 5: Cadastrar Opções (Admin) -->
+                    <div class="tab-pane fade" id="cadastroOpcoes">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Cadastrar Novas Opções</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="cadastroOpcoesForm">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="campoOpcao" class="form-label">Campo</label>
+                                            <select class="form-select" id="campoOpcao" required>
+                                                <option value="">Selecione o campo...</option>
+                                                <option value="canalSolicitacao">Canal de Solicitação</option>
+                                                <option value="motivo">Motivo</option>
+                                                <option value="docSolicitado">Doc. Solicitado</option>
+                                                <option value="formaRetirada">Forma de Retirada</option>
+                                                <option value="statusSolicitacao">Status da Solicitação</option>
+                                            </select>
+                                            <div class="invalid-feedback">Por favor, selecione o campo.</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="novaOpcao" class="form-label">Nova Opção</label>
+                                            <input type="text" class="form-control" id="novaOpcao" required>
+                                            <div class="invalid-feedback">Por favor, informe a nova opção.</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-primary">Adicionar Opção</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Opções Cadastradas</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <h6>Canal de Solicitação</h6>
+                                        <ul class="list-group" id="listaCanalSolicitacao">
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <h6>Motivo</h6>
+                                        <ul class="list-group" id="listaMotivo">
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <h6>Doc. Solicitado</h6>
+                                        <ul class="list-group" id="listaDocSolicitado">
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <h6>Forma de Retirada</h6>
+                                        <ul class="list-group" id="listaFormaRetirada">
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <h6>Status da Solicitação</h6>
+                                        <ul class="list-group" id="listaStatusSolicitacao">
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba 6: Relatório (Admin) -->
+                    <div class="tab-pane fade" id="relatorio">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Filtros do Relatório</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="filtroRelatorioForm">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="relatorioAno" class="form-label">Ano</label>
+                                            <select class="form-select" id="relatorioAno">
+                                                <option value="">Todos os anos</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="relatorioMes" class="form-label">Mês</label>
+                                            <select class="form-select" id="relatorioMes">
+                                                <option value="">Todos os meses</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="relatorioData" class="form-label">Data de Solicitação</label>
+                                            <input type="date" class="form-control" id="relatorioData">
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button type="submit" class="btn btn-primary">Gerar Relatório</button>
+                                        <button type="button" class="btn btn-success" id="gerarPDFBtn">
+                                            <i class="fas fa-file-pdf"></i> Gerar PDF
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Métricas Principais -->
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <i class="fas fa-file-medical"></i>
+                                    <h3 id="totalSolicitacoes">0</h3>
+                                    <p>Total de Solicitações</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <i class="fas fa-check-circle"></i>
+                                    <h3 id="solicitacoesFinalizadas">0</h3>
+                                    <p>Solicitações Finalizadas</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <i class="fas fa-clock"></i>
+                                    <h3 id="solicitacoesPendentes">0</h3>
+                                    <p>Solicitações Pendentes</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <i class="fas fa-chart-line"></i>
+                                    <h3 id="taxaConclusao">0%</h3>
+                                    <p>Taxa de Conclusão</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Gráficos Detalhados -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Solicitações por Motivo</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="motivoChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Solicitações por Status</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="statusChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Documentos Solicitados</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="documentosChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Formas de Retirada</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="retiradaChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Produtividade por Usuário</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="produtividadeChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Evolução Mensal de Solicitações</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="evolucaoChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tabela Detalhada -->
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Detalhamento por Categoria</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Categoria</th>
+                                                        <th>Valor</th>
+                                                        <th>Quantidade</th>
+                                                        <th>Percentual</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="detalhamentoTabela">
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba 7: Histórico do Usuário (Admin) -->
+                    <div class="tab-pane fade" id="historicoUsuario">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Selecionar Usuário</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="usuarioHistorico" class="form-label">Usuário</label>
+                                        <select class="form-select" id="usuarioHistorico">
+                                            <option value="">Selecione um usuário...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="periodoHistorico" class="form-label">Período</label>
+                                        <select class="form-select" id="periodoHistorico">
+                                            <option value="7">Últimos 7 dias</option>
+                                            <option value="30">Últimos 30 dias</option>
+                                            <option value="90">Últimos 3 meses</option>
+                                            <option value="365">Último ano</option>
+                                            <option value="custom">Personalizado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row" id="customPeriodo" style="display: none;">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="dataInicioHistorico" class="form-label">Data de Início</label>
+                                        <input type="date" class="form-control" id="dataInicioHistorico">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="dataFimHistorico" class="form-label">Data de Fim</label>
+                                        <input type="date" class="form-control" id="dataFimHistorico">
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-primary" id="gerarHistoricoBtn">Gerar Histórico</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="card dashboard-card">
+                                    <i class="fas fa-clock"></i>
+                                    <h3 id="tempoUso">0h</h3>
+                                    <p>Tempo de Uso</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card dashboard-card">
+                                    <i class="fas fa-tasks"></i>
+                                    <h3 id="solicitacoesUsuario">0</h3>
+                                    <p>Solicitações Realizadas</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card dashboard-card">
+                                    <i class="fas fa-chart-line"></i>
+                                    <h3 id="mediaProdutividade">0/dia</h3>
+                                    <p>Média de Produtividade</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Atividades do Usuário</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Data/Hora</th>
+                                                <th>Ação</th>
+                                                <th>Detalhes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabelaAtividades">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Solicitação -->
+    <div class="modal fade" id="editarSolicitacaoModal" tabindex="-1" aria-labelledby="editarSolicitacaoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarSolicitacaoModalLabel">Editar Solicitação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editarSolicitacaoForm">
+                        <input type="hidden" id="editarId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editarStatusSolicitacao" class="form-label">Status da Solicitação</label>
+                                    <select class="form-select" id="editarStatusSolicitacao" required>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editarDataRetirada" class="form-label">Data da Retirada</label>
+                                    <input type="date" class="form-control" id="editarDataRetirada">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarObservacao" class="form-label">Observação</label>
+                            <textarea class="form-control" id="editarObservacao" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="salvarEdicaoSolicitacao">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // =============================================
+        // CONFIGURAÇÕES DO GOOGLE SHEETS
+        // =============================================
+        const SPREADSHEET_ID = 1OEqh24L8mtMYkf1j8bAn7Q1GZjPqUrUNuY_ySau_5p4
+; // Substitua pelo ID da sua planilha
+        const API_KEY = AIzaSyB9TcVJoCR2A2AICG9oH7owHn2bMiBmhlM ; // Substitua pela sua API Key
+        let gapiInicializado = false;
+
+        // =============================================
+        // DADOS INICIAIS
+        // =============================================
+        let usuarios = [
+            { id: 1, nomeCompleto: "Administrador", usuario: "admin", senha: "admin123", email: "admin@sistema.com", tipo: "admin", dataCadastro: "2023-01-01" },
+            { id: 2, nomeCompleto: "João Silva", usuario: "joao.silva", senha: "123456", email: "joao.silva@hospital.com", tipo: "user", dataCadastro: "2023-02-15" },
+            { id: 3, nomeCompleto: "Maria Santos", usuario: "maria.santos", senha: "123456", email: "maria.santos@hospital.com", tipo: "user", dataCadastro: "2023-03-10" }
+        ];
+        
+        let opcoesCadastro = {
+            canalSolicitacao: ["SITE", "PRESENCIAL"],
+            motivo: ["INSS", "DPVAT", "JUDICIAL", "SEGURADORA", "DPVAT / INSS", "2° OPINIÃO", "ÓBITO"],
+            docSolicitado: ["COP", "COP + RM", "RM"],
+            formaRetirada: ["E-MAIL", "FÍSICO"],
+            statusSolicitacao: ["JÁ SOLICITADO", "BAIXANDO", "IMPRIMIR", "ENTREGUE", "NADA CONSTA", "AGUARDANDO RELATÓRIO", "FINALIZADO", "AG. PA ARQUIVO", "AG.JADOC"]
+        };
+        
+        let solicitacoes = [
+            {
+                id: 1,
+                ano: "2023",
+                mes: "MAIO",
+                dataSolicitacao: "2023-05-10",
+                nomePaciente: "Maria Oliveira",
+                nomeMae: "Ana Oliveira",
+                dataNascimento: "1985-03-15",
+                telefone: "(11) 99999-9999",
+                canalSolicitacao: "SITE",
+                motivo: "INSS",
+                docSolicitado: "COP",
+                periodoInicial: "2023-01-01",
+                periodoFinal: "2023-05-10",
+                requerente: "Maria Oliveira",
+                formaRetirada: "E-MAIL",
+                email: "maria.oliveira@email.com",
+                statusSolicitacao: "FINALIZADO",
+                dataRetirada: "2023-05-15",
+                observacao: "Solicitação processada com sucesso.",
+                loginUsuario: "joao.silva"
+            }
+        ];
+        
+        let atividadesUsuario = [
+            { id: 1, usuario: "joao.silva", dataHora: "2023-05-10 09:15:00", acao: "Cadastro de Solicitação", detalhes: "Solicitação #001 para Maria Oliveira" }
+        ];
+        
+        // Variáveis globais
+        let usuarioLogado = null;
+        let tipoUsuario = null;
+        
+        // =============================================
+        // FUNÇÕES DO GOOGLE SHEETS
+        // =============================================
+
+        // Inicializar Google API
+        async function inicializarGoogleAPI() {
+            try {
+                await new Promise((resolve, reject) => {
+                    gapi.load('client', { callback: resolve, onerror: reject });
+                });
+                
+                await gapi.client.init({
+                    apiKey: API_KEY,
+                    discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+                });
+                
+                gapiInicializado = true;
+                atualizarStatusConexao(true);
+                console.log('Google API inicializada com sucesso');
+                
+                // Tentar carregar dados do Google Sheets
+                await carregarDadosSheets();
+                
+            } catch (error) {
+                console.error('Erro ao inicializar Google API:', error);
+                atualizarStatusConexao(false);
+                mostrarMensagem('Erro ao conectar com Google Sheets. Usando dados locais.', 'error');
+            }
+        }
+
+        // Carregar dados do Google Sheets
+        async function carregarDadosSheets() {
+            if (!gapiInicializado) return;
+
+            try {
+                // Carregar solicitações
+                const responseSolicitacoes = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Solicitacoes!A2:T',
+                });
+
+                if (responseSolicitacoes.result.values) {
+                    solicitacoes = responseSolicitacoes.result.values.map(row => ({
+                        id: parseInt(row[0]) || 0,
+                        ano: row[1] || '',
+                        mes: row[2] || '',
+                        dataSolicitacao: row[3] || '',
+                        nomePaciente: row[4] || '',
+                        nomeMae: row[5] || '',
+                        dataNascimento: row[6] || '',
+                        telefone: row[7] || '',
+                        canalSolicitacao: row[8] || '',
+                        motivo: row[9] || '',
+                        docSolicitado: row[10] || '',
+                        periodoInicial: row[11] || '',
+                        periodoFinal: row[12] || '',
+                        requerente: row[13] || '',
+                        formaRetirada: row[14] || '',
+                        email: row[15] || '',
+                        statusSolicitacao: row[16] || '',
+                        dataRetirada: row[17] || '',
+                        observacao: row[18] || '',
+                        loginUsuario: row[19] || ''
+                    })).filter(s => s.id > 0);
+                }
+
+                // Carregar usuários
+                const responseUsuarios = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Usuarios!A2:G',
+                });
+
+                if (responseUsuarios.result.values) {
+                    usuarios = responseUsuarios.result.values.map(row => ({
+                        id: parseInt(row[0]) || 0,
+                        nomeCompleto: row[1] || '',
+                        usuario: row[2] || '',
+                        senha: row[3] || '',
+                        email: row[4] || '',
+                        tipo: row[5] || 'user',
+                        dataCadastro: row[6] || ''
+                    })).filter(u => u.id > 0);
+                }
+
+                console.log('Dados carregados do Google Sheets');
+                mostrarMensagem('Dados sincronizados com Google Sheets!', 'success');
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados do Sheets:', error);
+                mostrarMensagem('Erro ao carregar dados do Google Sheets. Usando dados locais.', 'error');
+            }
+        }
+
+        // Salvar solicitação no Google Sheets
+        async function salvarSolicitacaoSheets(solicitacao) {
+            if (!gapiInicializado) return false;
+
+            try {
+                const values = [
+                    [
+                        solicitacao.id.toString(),
+                        solicitacao.ano,
+                        solicitacao.mes,
+                        solicitacao.dataSolicitacao,
+                        solicitacao.nomePaciente,
+                        solicitacao.nomeMae,
+                        solicitacao.dataNascimento,
+                        solicitacao.telefone,
+                        solicitacao.canalSolicitacao,
+                        solicitacao.motivo,
+                        solicitacao.docSolicitado,
+                        solicitacao.periodoInicial,
+                        solicitacao.periodoFinal,
+                        solicitacao.requerente,
+                        solicitacao.formaRetirada,
+                        solicitacao.email,
+                        solicitacao.statusSolicitacao,
+                        solicitacao.dataRetirada,
+                        solicitacao.observacao,
+                        solicitacao.loginUsuario
+                    ]
+                ];
+
+                const response = await gapi.client.sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Solicitacoes!A1',
+                    valueInputOption: 'RAW',
+                    insertDataOption: 'INSERT_ROWS',
+                    resource: { values }
+                });
+
+                console.log('Solicitação salva no Sheets:', response);
+                return true;
+            } catch (error) {
+                console.error('Erro ao salvar solicitação no Sheets:', error);
+                return false;
+            }
+        }
+
+        // Atualizar solicitação no Google Sheets
+        async function atualizarSolicitacaoSheets(solicitacao) {
+            if (!gapiInicializado) return false;
+
+            try {
+                // Encontrar a linha da solicitação
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Solicitacoes!A2:T',
+                });
+
+                if (!response.result.values) return false;
+
+                const rows = response.result.values;
+                let rowIndex = -1;
+
+                for (let i = 0; i < rows.length; i++) {
+                    if (parseInt(rows[i][0]) === solicitacao.id) {
+                        rowIndex = i + 2; // +2 porque a linha 1 é cabeçalho
+                        break;
+                    }
+                }
+
+                if (rowIndex === -1) return false;
+
+                const values = [
+                    [
+                        solicitacao.id.toString(),
+                        solicitacao.ano,
+                        solicitacao.mes,
+                        solicitacao.dataSolicitacao,
+                        solicitacao.nomePaciente,
+                        solicitacao.nomeMae,
+                        solicitacao.dataNascimento,
+                        solicitacao.telefone,
+                        solicitacao.canalSolicitacao,
+                        solicitacao.motivo,
+                        solicitacao.docSolicitado,
+                        solicitacao.periodoInicial,
+                        solicitacao.periodoFinal,
+                        solicitacao.requerente,
+                        solicitacao.formaRetirada,
+                        solicitacao.email,
+                        solicitacao.statusSolicitacao,
+                        solicitacao.dataRetirada,
+                        solicitacao.observacao,
+                        solicitacao.loginUsuario
+                    ]
+                ];
+
+                await gapi.client.sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `Solicitacoes!A${rowIndex}:T${rowIndex}`,
+                    valueInputOption: 'RAW',
+                    resource: { values }
+                });
+
+                console.log('Solicitação atualizada no Sheets');
+                return true;
+            } catch (error) {
+                console.error('Erro ao atualizar solicitação no Sheets:', error);
+                return false;
+            }
+        }
+
+        // Atualizar status da conexão
+        function atualizarStatusConexao(online) {
+            const statusElement = document.getElementById('connectionStatus');
+            const textElement = document.getElementById('connectionText');
+            
+            if (online) {
+                statusElement.className = 'connection-status connection-online';
+                textElement.textContent = 'Conectado ao Google Sheets';
+                statusElement.style.display = 'block';
+            } else {
+                statusElement.className = 'connection-status connection-offline';
+                textElement.textContent = 'Modo Offline - Dados Locais';
+                statusElement.style.display = 'block';
+            }
+        }
+
+        // Sincronizar dados
+        async function sincronizarDados() {
+            mostrarMensagem('Sincronizando dados com Google Sheets...', 'info');
+            await carregarDadosSheets();
+            
+            // Atualizar todas as visualizações
+            preencherTodosRegistros();
+            atualizarTabelaUsuarios();
+            preencherListasOpcoes();
+        }
+
+        // =============================================
+        // FUNÇÕES ORIGINAIS DO SISTEMA (MODIFICADAS)
+        // =============================================
+
+        // Inicialização da aplicação
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar Google API
+            inicializarGoogleAPI();
+            
+            // Configurar data atual para campos de data
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataSolicitacao').value = hoje;
+            document.getElementById('periodoInicial').value = hoje;
+            document.getElementById('periodoFinal').value = hoje;
+            
+            // Preencher ano e mês automaticamente
+            atualizarAnoMes();
+            
+            // Preencher anos no relatório (2020 a 2040)
+            const relatorioAnoSelect = document.getElementById('relatorioAno');
+            for (let i = 2020; i <= 2040; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                relatorioAnoSelect.appendChild(option);
+            }
+            
+            // Preencher meses no relatório
+            const meses = [
+                "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
+                "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
+            ];
+            
+            const relatorioMesSelect = document.getElementById('relatorioMes');
+            meses.forEach(mes => {
+                const option = document.createElement('option');
+                option.value = mes;
+                option.textContent = mes;
+                relatorioMesSelect.appendChild(option);
+            });
+            
+            // Event Listeners
+            document.getElementById('loginForm').addEventListener('submit', fazerLogin);
+            document.getElementById('logoutBtn').addEventListener('click', fazerLogout);
+            document.getElementById('adminLogoutBtn').addEventListener('click', fazerLogout);
+            document.getElementById('solicitacaoForm').addEventListener('submit', salvarSolicitacao);
+            document.getElementById('filtroForm').addEventListener('submit', pesquisarSolicitacoes);
+            document.getElementById('cadastroUsuarioForm').addEventListener('submit', cadastrarUsuario);
+            document.getElementById('cadastroOpcoesForm').addEventListener('submit', cadastrarOpcao);
+            document.getElementById('filtroRelatorioForm').addEventListener('submit', gerarRelatorio);
+            document.getElementById('gerarHistoricoBtn').addEventListener('click', gerarHistoricoUsuario);
+            document.getElementById('periodoHistorico').addEventListener('change', function() {
+                document.getElementById('customPeriodo').style.display = 
+                    this.value === 'custom' ? 'block' : 'none';
+            });
+            document.getElementById('helpBtn').addEventListener('click', mostrarAjuda);
+            document.getElementById('gerarPDFBtn').addEventListener('click', gerarPDF);
+            document.getElementById('salvarEdicaoSolicitacao').addEventListener('click', salvarEdicaoSolicitacao);
+            document.getElementById('syncBtn').addEventListener('click', sincronizarDados);
+            
+            // Preencher listas de opções
+            preencherListasOpcoes();
+            atualizarSelectsFormulario();
+            atualizarSelectsFiltros();
+            
+            // Preencher usuários no histórico
+            preencherUsuariosHistorico();
+            
+            // Preencher tabela de todos os registros
+            preencherTodosRegistros();
+            
+            // Atualizar tabela de usuários
+            atualizarTabelaUsuarios();
+            
+            // Configurar validação de formulários
+            configurarValidacaoFormularios();
+        });
+
+        // Função para salvar solicitação (MODIFICADA)
+        async function salvarSolicitacao(e) {
+            e.preventDefault();
+            
+            if (!validarFormulario(document.getElementById('solicitacaoForm'))) {
+                mostrarMensagem('Por favor, preencha todos os campos obrigatórios corretamente.', 'error');
+                return;
+            }
+            
+            // Coletar dados do formulário
+            const novaSolicitacao = {
+                id: solicitacoes.length > 0 ? Math.max(...solicitacoes.map(s => s.id)) + 1 : 1,
+                ano: document.getElementById('ano').value,
+                mes: document.getElementById('mes').value,
+                dataSolicitacao: document.getElementById('dataSolicitacao').value,
+                nomePaciente: document.getElementById('nomePaciente').value,
+                nomeMae: document.getElementById('nomeMae').value,
+                dataNascimento: document.getElementById('dataNascimento').value,
+                telefone: document.getElementById('telefone').value,
+                canalSolicitacao: document.getElementById('canalSolicitacao').value,
+                motivo: document.getElementById('motivo').value,
+                docSolicitado: document.getElementById('docSolicitado').value,
+                periodoInicial: document.getElementById('periodoInicial').value,
+                periodoFinal: document.getElementById('periodoFinal').value,
+                requerente: document.getElementById('requerente').value,
+                formaRetirada: document.getElementById('formaRetirada').value,
+                email: document.getElementById('email').value,
+                statusSolicitacao: document.getElementById('statusSolicitacao').value,
+                dataRetirada: document.getElementById('dataRetirada').value,
+                observacao: document.getElementById('observacao').value,
+                loginUsuario: usuarioLogado.usuario
+            };
+            
+            // Adicionar à lista de solicitações
+            solicitacoes.push(novaSolicitacao);
+            
+            // Salvar no Google Sheets
+            const salvoNoSheets = await salvarSolicitacaoSheets(novaSolicitacao);
+            
+            if (salvoNoSheets) {
+                mostrarMensagem('Solicitação cadastrada e sincronizada com Google Sheets!', 'success');
+            } else {
+                mostrarMensagem('Solicitação salva localmente (erro ao conectar com Google Sheets).', 'warning');
+            }
+            
+            // Registrar atividade
+            const agora = new Date();
+            const dataHora = `${agora.toISOString().split('T')[0]} ${agora.toTimeString().split(' ')[0]}`;
+            atividadesUsuario.push({
+                id: atividadesUsuario.length + 1,
+                usuario: usuarioLogado.usuario,
+                dataHora: dataHora,
+                acao: "Cadastro de Solicitação",
+                detalhes: `Solicitação #${novaSolicitacao.id} para ${novaSolicitacao.nomePaciente}`
+            });
+            
+            // Limpar formulário
+            document.getElementById('solicitacaoForm').reset();
+            
+            // Definir data atual
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataSolicitacao').value = hoje;
+            document.getElementById('periodoInicial').value = hoje;
+            document.getElementById('periodoFinal').value = hoje;
+            
+            // Atualizar ano e mês
+            atualizarAnoMes();
+            
+            // Atualizar tabela de todos os registros
+            preencherTodosRegistros();
+        }
+
+        // Função para salvar edição da solicitação (MODIFICADA)
+        async function salvarEdicaoSolicitacao() {
+            const id = parseInt(document.getElementById('editarId').value);
+            const solicitacaoIndex = solicitacoes.findIndex(s => s.id === id);
+            
+            if (solicitacaoIndex === -1) return;
+            
+            // Atualizar dados da solicitação
+            solicitacoes[solicitacaoIndex].statusSolicitacao = document.getElementById('editarStatusSolicitacao').value;
+            solicitacoes[solicitacaoIndex].dataRetirada = document.getElementById('editarDataRetirada').value;
+            solicitacoes[solicitacaoIndex].observacao = document.getElementById('editarObservacao').value;
+            
+            // Atualizar no Google Sheets
+            const atualizadoNoSheets = await atualizarSolicitacaoSheets(solicitacoes[solicitacaoIndex]);
+            
+            if (atualizadoNoSheets) {
+                mostrarMensagem('Solicitação atualizada e sincronizada com Google Sheets!', 'success');
+            } else {
+                mostrarMensagem('Alterações salvas localmente (erro ao conectar com Google Sheets).', 'warning');
+            }
+            
+            // Registrar atividade
+            const agora = new Date();
+            const dataHora = `${agora.toISOString().split('T')[0]} ${agora.toTimeString().split(' ')[0]}`;
+            atividadesUsuario.push({
+                id: atividadesUsuario.length + 1,
+                usuario: usuarioLogado.usuario,
+                dataHora: dataHora,
+                acao: "Atualização de Solicitação",
+                detalhes: `Solicitação #${id} atualizada`
+            });
+            
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editarSolicitacaoModal'));
+            modal.hide();
+            
+            // Atualizar tabelas
+            pesquisarSolicitacoes({ preventDefault: () => {} });
+            preencherTodosRegistros();
+        }
+
+        // =============================================
+        // FUNÇÕES ORIGINAIS DO SISTEMA (MANTIDAS)
+        // =============================================
+
+        // As demais funções permanecem exatamente como no código original:
+        // fazerLogin, fazerLogout, pesquisarSolicitacoes, preencherTodosRegistros,
+        // editarSolicitacao, cadastrarUsuario, atualizarTabelaUsuarios, removerUsuario,
+        // cadastrarOpcao, removerOpcao, preencherListasOpcoes, atualizarSelectsFormulario,
+        // atualizarSelectsFiltros, preencherUsuariosHistorico, gerarHistoricoUsuario,
+        // gerarRelatorio, gerarGraficoMotivos, gerarGraficoStatus, gerarGraficoDocumentos,
+        // gerarGraficoRetirada, gerarGraficoProdutividade, gerarGraficoEvolucao,
+        // preencherTabelaDetalhamento, gerarPDF, filtrarSolicitacoesParaRelatorio,
+        // calcularMediaPorDia, calcularTempoMedioAtendimento, calcularUsuarioMaisProdutivo,
+        // mostrarAjuda, mostrarMensagem, formatarData, formatarDataHora,
+        // configurarValidacaoFormularios, validarFormulario, validarEmail, atualizarAnoMes
+
+        // [Todas as outras funções do código original são mantidas aqui...]
+        // Por questão de espaço, mantive apenas as funções modificadas acima.
+        // As demais funções permanecem exatamente como no seu código original.
+
+        // Função para fazer login
+        function fazerLogin(e) {
+            e.preventDefault();
+            
+            const usuario = document.getElementById('loginUser').value;
+            const senha = document.getElementById('loginPassword').value;
+            
+            // Verificar credenciais
+            const usuarioEncontrado = usuarios.find(u => u.usuario === usuario && u.senha === senha);
+            
+            if (usuarioEncontrado) {
+                usuarioLogado = usuarioEncontrado;
+                tipoUsuario = usuarioEncontrado.tipo;
+                
+                // Mostrar sistema e esconder tela de login
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainSystem').style.display = 'block';
+                
+                // Mostrar menu apropriado
+                if (tipoUsuario === 'admin') {
+                    document.getElementById('userMenu').style.display = 'none';
+                    document.getElementById('adminMenu').style.display = 'block';
+                    // Ativar a primeira aba do admin (Cadastro de Usuário)
+                    document.querySelector('#adminMenu .nav-link').click();
+                } else {
+                    document.getElementById('userMenu').style.display = 'block';
+                    document.getElementById('adminMenu').style.display = 'none';
+                    // Ativar a primeira aba do usuário (Formulário)
+                    document.querySelector('#userMenu .nav-link').click();
+                }
+                
+                // Atualizar informações do usuário
+                document.getElementById('userInfo').textContent = `${usuarioLogado.nomeCompleto} (${usuarioLogado.usuario})`;
+                
+                // Mostrar mensagem de boas-vindas
+                mostrarMensagem(`Bem-vindo, ${usuarioLogado.nomeCompleto}!`, 'success');
+            } else {
+                mostrarMensagem('Usuário ou senha incorretos!', 'error');
+            }
+        }
+        
+        // Função para fazer logout
+        function fazerLogout() {
+            usuarioLogado = null;
+            tipoUsuario = null;
+            
+            // Mostrar tela de login e esconder sistema
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('mainSystem').style.display = 'none';
+            
+            // Limpar formulário de login
+            document.getElementById('loginForm').reset();
+            
+            mostrarMensagem('Logout realizado com sucesso!', 'info');
+        }
+        
+        // Função para pesquisar solicitações
+        function pesquisarSolicitacoes(e) {
+            e.preventDefault();
+            
+            const filtroData = document.getElementById('filtroData').value;
+            const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
+            const filtroStatus = document.getElementById('filtroStatus').value;
+            const filtroMotivo = document.getElementById('filtroMotivo').value;
+            const filtroCanal = document.getElementById('filtroCanal').value;
+            const filtroDoc = document.getElementById('filtroDoc').value;
+            
+            // Filtrar solicitações
+            let resultados = solicitacoes;
+            
+            // Se for usuário comum, mostrar apenas suas solicitações
+            if (tipoUsuario !== 'admin') {
+                resultados = resultados.filter(s => s.loginUsuario === usuarioLogado.usuario);
+            }
+            
+            resultados = resultados.filter(s => {
+                const matchData = !filtroData || s.dataSolicitacao === filtroData;
+                const matchNome = !filtroNome || s.nomePaciente.toLowerCase().includes(filtroNome);
+                const matchStatus = !filtroStatus || s.statusSolicitacao === filtroStatus;
+                const matchMotivo = !filtroMotivo || s.motivo === filtroMotivo;
+                const matchCanal = !filtroCanal || s.canalSolicitacao === filtroCanal;
+                const matchDoc = !filtroDoc || s.docSolicitado === filtroDoc;
+                
+                return matchData && matchNome && matchStatus && matchMotivo && matchCanal && matchDoc;
+            });
+            
+            // Exibir resultados
+            const tabela = document.getElementById('resultadosTabela');
+            tabela.innerHTML = '';
+            
+            if (resultados.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="6" class="text-center">Nenhuma solicitação encontrada</td></tr>';
+                return;
+            }
+            
+            resultados.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatarData(s.dataSolicitacao)}</td>
+                    <td>${s.nomePaciente}</td>
+                    <td>${s.nomeMae}</td>
+                    <td>${s.motivo}</td>
+                    <td><span class="badge bg-primary">${s.statusSolicitacao}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-outline-warning" onclick="editarSolicitacao(${s.id})">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </td>
+                `;
+                tabela.appendChild(tr);
+            });
+        }
+        
+        // Função para preencher todos os registros
+        function preencherTodosRegistros() {
+            const tabela = document.getElementById('todosRegistrosTabela');
+            tabela.innerHTML = '';
+            
+            // Filtrar solicitações do usuário atual (se não for admin)
+            let registrosParaExibir = solicitacoes;
+            if (tipoUsuario !== 'admin') {
+                registrosParaExibir = solicitacoes.filter(s => s.loginUsuario === usuarioLogado.usuario);
+            }
+            
+            if (registrosParaExibir.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="7" class="text-center">Nenhum registro encontrado</td></tr>';
+                return;
+            }
+            
+            registrosParaExibir.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${s.id}</td>
+                    <td>${formatarData(s.dataSolicitacao)}</td>
+                    <td>${s.nomePaciente}</td>
+                    <td>${s.nomeMae}</td>
+                    <td>${s.motivo}</td>
+                    <td><span class="badge bg-primary">${s.statusSolicitacao}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-outline-warning" onclick="editarSolicitacao(${s.id})">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </td>
+                `;
+                tabela.appendChild(tr);
+            });
+        }
+        
+        // Função para editar solicitação
+        function editarSolicitacao(id) {
+            const solicitacao = solicitacoes.find(s => s.id === id);
+            if (!solicitacao) return;
+            
+            // Preencher modal com dados da solicitação
+            document.getElementById('editarId').value = solicitacao.id;
+            
+            // Preencher select de status
+            const statusSelect = document.getElementById('editarStatusSolicitacao');
+            statusSelect.innerHTML = '';
+            opcoesCadastro.statusSolicitacao.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                if (status === solicitacao.statusSolicitacao) {
+                    option.selected = true;
+                }
+                statusSelect.appendChild(option);
+            });
+            
+            document.getElementById('editarDataRetirada').value = solicitacao.dataRetirada || '';
+            document.getElementById('editarObservacao').value = solicitacao.observacao || '';
+            
+            // Mostrar modal
+            const modal = new bootstrap.Modal(document.getElementById('editarSolicitacaoModal'));
+            modal.show();
+        }
+        
+        // Função para cadastrar usuário
+        function cadastrarUsuario(e) {
+            e.preventDefault();
+            
+            if (!validarFormulario(document.getElementById('cadastroUsuarioForm'))) {
+                mostrarMensagem('Por favor, preencha todos os campos obrigatórios corretamente.', 'error');
+                return;
+            }
+            
+            const nomeCompleto = document.getElementById('nomeCompleto').value;
+            const usuario = document.getElementById('novoUsuario').value;
+            const senha = document.getElementById('novaSenha').value;
+            const confirmarSenha = document.getElementById('confirmarSenha').value;
+            const email = document.getElementById('novoEmail').value;
+            const tipo = document.getElementById('tipoUsuario').value;
+            
+            // Verificar se as senhas coincidem
+            if (senha !== confirmarSenha) {
+                mostrarMensagem('As senhas não coincidem!', 'error');
+                document.getElementById('confirmarSenha').classList.add('is-invalid');
+                return;
+            }
+            
+            // Verificar se o usuário já existe
+            if (usuarios.find(u => u.usuario === usuario)) {
+                mostrarMensagem('Este nome de usuário já está em uso!', 'error');
+                document.getElementById('novoUsuario').classList.add('is-invalid');
+                return;
+            }
+            
+            // Criar novo usuário
+            const novoUsuario = {
+                id: usuarios.length > 0 ? Math.max(...usuarios.map(u => u.id)) + 1 : 1,
+                nomeCompleto: nomeCompleto,
+                usuario: usuario,
+                senha: senha,
+                email: email,
+                tipo: tipo,
+                dataCadastro: new Date().toISOString().split('T')[0]
+            };
+            
+            // Adicionar à lista
+            usuarios.push(novoUsuario);
+            
+            // Atualizar tabela
+            atualizarTabelaUsuarios();
+            
+            // Atualizar lista de usuários no histórico
+            preencherUsuariosHistorico();
+            
+            // Limpar formulário
+            document.getElementById('cadastroUsuarioForm').reset();
+            
+            mostrarMensagem('Usuário cadastrado com sucesso!', 'success');
+        }
+        
+        // Função para atualizar tabela de usuários
+        function atualizarTabelaUsuarios() {
+            const tabela = document.getElementById('tabelaUsuarios');
+            tabela.innerHTML = '';
+            
+            usuarios.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${u.nomeCompleto}</td>
+                    <td>${u.usuario}</td>
+                    <td>${u.email}</td>
+                    <td>${u.tipo === 'admin' ? 'Administrador' : 'Usuário Comum'}</td>
+                    <td>${formatarData(u.dataCadastro)}</td>
+                    <td>
+                        ${u.id !== 1 ? `<button class="btn btn-sm btn-outline-danger" onclick="removerUsuario(${u.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>` : '<small class="text-muted">Não permitido</small>'}
+                    </td>
+                `;
+                tabela.appendChild(tr);
+            });
+        }
+        
+        // Função para remover usuário
+        function removerUsuario(id) {
+            if (id === 1) {
+                mostrarMensagem('Não é possível remover o usuário administrador principal!', 'error');
+                return;
+            }
+            
+            if (confirm('Tem certeza que deseja remover este usuário?')) {
+                usuarios = usuarios.filter(u => u.id !== id);
+                atualizarTabelaUsuarios();
+                preencherUsuariosHistorico();
+                mostrarMensagem('Usuário removido com sucesso!', 'success');
+            }
+        }
+        
+        // Função para cadastrar nova opção
+        function cadastrarOpcao(e) {
+            e.preventDefault();
+            
+            if (!validarFormulario(document.getElementById('cadastroOpcoesForm'))) {
+                mostrarMensagem('Por favor, preencha todos os campos obrigatórios corretamente.', 'error');
+                return;
+            }
+            
+            const campo = document.getElementById('campoOpcao').value;
+            const opcao = document.getElementById('novaOpcao').value.toUpperCase();
+            
+            // Verificar se a opção já existe
+            if (opcoesCadastro[campo].includes(opcao)) {
+                mostrarMensagem('Esta opção já existe!', 'error');
+                document.getElementById('novaOpcao').classList.add('is-invalid');
+                return;
+            }
+            
+            // Adicionar à lista
+            opcoesCadastro[campo].push(opcao);
+            
+            // Atualizar listas
+            preencherListasOpcoes();
+            atualizarSelectsFormulario();
+            atualizarSelectsFiltros();
+            
+            // Limpar formulário
+            document.getElementById('cadastroOpcoesForm').reset();
+            
+            mostrarMensagem('Opção adicionada com sucesso!', 'success');
+        }
+        
+        // Função para remover opção
+        function removerOpcao(campo, opcao) {
+            if (confirm(`Tem certeza que deseja remover a opção "${opcao}"?`)) {
+                opcoesCadastro[campo] = opcoesCadastro[campo].filter(item => item !== opcao);
+                preencherListasOpcoes();
+                atualizarSelectsFormulario();
+                atualizarSelectsFiltros();
+                mostrarMensagem('Opção removida com sucesso!', 'success');
+            }
+        }
+        
+        // Função para preencher listas de opções
+        function preencherListasOpcoes() {
+            // Canal de Solicitação
+            const listaCanal = document.getElementById('listaCanalSolicitacao');
+            listaCanal.innerHTML = '';
+            opcoesCadastro.canalSolicitacao.forEach(opcao => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    ${opcao}
+                    <button class="btn btn-sm btn-outline-danger" onclick="removerOpcao('canalSolicitacao', '${opcao}')">
+                        Remover
+                    </button>
+                `;
+                listaCanal.appendChild(li);
+            });
+            
+            // Motivo
+            const listaMotivo = document.getElementById('listaMotivo');
+            listaMotivo.innerHTML = '';
+            opcoesCadastro.motivo.forEach(opcao => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    ${opcao}
+                    <button class="btn btn-sm btn-outline-danger" onclick="removerOpcao('motivo', '${opcao}')">
+                        Remover
+                    </button>
+                `;
+                listaMotivo.appendChild(li);
+            });
+            
+            // Documentos Solicitados
+            const listaDoc = document.getElementById('listaDocSolicitado');
+            listaDoc.innerHTML = '';
+            opcoesCadastro.docSolicitado.forEach(opcao => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    ${opcao}
+                    <button class="btn btn-sm btn-outline-danger" onclick="removerOpcao('docSolicitado', '${opcao}')">
+                        Remover
+                    </button>
+                `;
+                listaDoc.appendChild(li);
+            });
+            
+            // Formas de Retirada
+            const listaRetirada = document.getElementById('listaFormaRetirada');
+            listaRetirada.innerHTML = '';
+            opcoesCadastro.formaRetirada.forEach(opcao => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    ${opcao}
+                    <button class="btn btn-sm btn-outline-danger" onclick="removerOpcao('formaRetirada', '${opcao}')">
+                        Remover
+                    </button>
+                `;
+                listaRetirada.appendChild(li);
+            });
+            
+            // Status da Solicitação
+            const listaStatus = document.getElementById('listaStatusSolicitacao');
+            listaStatus.innerHTML = '';
+            opcoesCadastro.statusSolicitacao.forEach(opcao => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    ${opcao}
+                    <button class="btn btn-sm btn-outline-danger" onclick="removerOpcao('statusSolicitacao', '${opcao}')">
+                        Remover
+                    </button>
+                `;
+                listaStatus.appendChild(li);
+            });
+        }
+        
+        // Função para atualizar selects do formulário
+        function atualizarSelectsFormulario() {
+            // Canal de Solicitação
+            const selectCanal = document.getElementById('canalSolicitacao');
+            selectCanal.innerHTML = '<option value="">Selecione...</option>';
+            opcoesCadastro.canalSolicitacao.forEach(opcao => {
+                const option = document.createElement('option');
+                option.value = opcao;
+                option.textContent = opcao;
+                selectCanal.appendChild(option);
+            });
+            
+            // Motivo
+            const selectMotivo = document.getElementById('motivo');
+            selectMotivo.innerHTML = '<option value="">Selecione...</option>';
+            opcoesCadastro.motivo.forEach(opcao => {
+                const option = document.createElement('option');
+                option.value = opcao;
+                option.textContent = opcao;
+                selectMotivo.appendChild(option);
+            });
+            
+            // Documento Solicitado
+            const selectDoc = document.getElementById('docSolicitado');
+            selectDoc.innerHTML = '<option value="">Selecione...</option>';
+            opcoesCadastro.docSolicitado.forEach(opcao => {
+                const option = document.createElement('option');
+                option.value = opcao;
+                option.textContent = opcao;
+                selectDoc.appendChild(option);
+            });
+            
+            // Forma de Retirada
+            const selectRetirada = document.getElementById('formaRetirada');
+            selectRetirada.innerHTML = '<option value="">Selecione...</option>';
+            opcoesCadastro.formaRetirada.forEach(opcao => {
+                const option = document.createElement('option');
+                option.value = opcao;
+                option.textContent = opcao;
+                selectRetirada.appendChild(option);
+            });
+            
+            // Status da Solicitação
+            const selectStatus = document.getElementById('statusSolicitacao');
+            selectStatus.innerHTML = '<option value="">Selecione...</option>';
+            opcoesCadastro.statusSolicitacao.forEach(opcao => {
+                const option = document.createElement('option');
+                option.value = opcao;
+                option.textContent = opcao;
+                selectStatus.appendChild(option);
+            });
+        }
+        
+        // Função para atualizar selects dos filtros
+        function atualizarSelectsFiltros() {
+            // Status
+            const selectStatus = document.getElementById('filtroStatus');
+            selectStatus.innerHTML = '<option value="">Todos os status</option>';
+            opcoesCadastro.statusSolicitacao.forEach(opcao => {
+                const option = document.createElement('option');
+                option.value = opcao;
+                option.textContent = opcao;
+                selectStatus.appendChild(option);
+            });
+            
+            // Motivo
+            const selectMotivo = document.getElementById('filtroMotivo');
+            selectMotivo.innerHTML = '<option value="">Todos os motivos</option>';
+            opcoesCadastro.motivo.forEach(opcao => {
+                const option = document.createElement('option');
+                option.value = opcao;
+                option.textContent = opcao;
+                selectMotivo.appendChild(option);
+            });
+            
+            // Canal
+            const selectCanal = document.getElementById('filtroCanal');
+            selectCanal.innerHTML = '<option value="">Todos os canais</option>';
+            opcoesCadastro.canalSolicitacao.forEach(opcao => {
+                const option = document.createElement('option');
+                option.value = opcao;
+                option.textContent = opcao;
+                selectCanal.appendChild(option);
+            });
+            
+            // Documento
+            const selectDoc = document.getElementById('filtroDoc');
+            selectDoc.innerHTML = '<option value="">Todos os documentos</option>';
+            opcoesCadastro.docSolicitado.forEach(opcao => {
+                const option = document.createElement('option');
+                option.value = opcao;
+                option.textContent = opcao;
+                selectDoc.appendChild(option);
+            });
+        }
+        
+        // Função para preencher usuários no histórico
+        function preencherUsuariosHistorico() {
+            const select = document.getElementById('usuarioHistorico');
+            select.innerHTML = '<option value="">Selecione um usuário...</option>';
+            
+            usuarios.forEach(u => {
+                const option = document.createElement('option');
+                option.value = u.usuario;
+                option.textContent = `${u.nomeCompleto} (${u.usuario})`;
+                select.appendChild(option);
+            });
+        }
+        
+        // Função para gerar histórico do usuário
+        function gerarHistoricoUsuario() {
+            const usuario = document.getElementById('usuarioHistorico').value;
+            const periodo = document.getElementById('periodoHistorico').value;
+            
+            if (!usuario) {
+                mostrarMensagem('Por favor, selecione um usuário!', 'error');
+                return;
+            }
+            
+            // Filtrar atividades do usuário
+            let atividadesFiltradas = atividadesUsuario.filter(a => a.usuario === usuario);
+            
+            // Aplicar filtro de período
+            if (periodo !== 'custom') {
+                const dias = parseInt(periodo);
+                const dataLimite = new Date();
+                dataLimite.setDate(dataLimite.getDate() - dias);
+                
+                atividadesFiltradas = atividadesFiltradas.filter(a => {
+                    const dataAtividade = new Date(a.dataHora);
+                    return dataAtividade >= dataLimite;
+                });
+            } else {
+                const dataInicio = document.getElementById('dataInicioHistorico').value;
+                const dataFim = document.getElementById('dataFimHistorico').value;
+                
+                if (!dataInicio || !dataFim) {
+                    mostrarMensagem('Por favor, selecione as datas para o período personalizado!', 'error');
+                    return;
+                }
+                
+                atividadesFiltradas = atividadesFiltradas.filter(a => {
+                    const dataAtividade = a.dataHora.split(' ')[0];
+                    return dataAtividade >= dataInicio && dataAtividade <= dataFim;
+                });
+            }
+            
+            // Calcular métricas
+            const tempoUso = atividadesFiltradas.length * 0.5; // Estimativa: 30 minutos por atividade
+            document.getElementById('tempoUso').textContent = `${tempoUso.toFixed(1)}h`;
+            
+            const solicitacoesRealizadas = atividadesFiltradas
+                .filter(a => a.acao === 'Cadastro de Solicitação').length;
+            document.getElementById('solicitacoesUsuario').textContent = solicitacoesRealizadas;
+            
+            const diasTrabalhados = new Set(atividadesFiltradas.map(a => a.dataHora.split(' ')[0])).size;
+            const mediaProdutividade = diasTrabalhados > 0 ? 
+                (solicitacoesRealizadas / diasTrabalhados).toFixed(1) : 0;
+            document.getElementById('mediaProdutividade').textContent = `${mediaProdutividade}/dia`;
+            
+            // Preencher tabela de atividades
+            const tabela = document.getElementById('tabelaAtividades');
+            tabela.innerHTML = '';
+            
+            if (atividadesFiltradas.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="3" class="text-center">Nenhuma atividade encontrada</td></tr>';
+                return;
+            }
+            
+            atividadesFiltradas.forEach(a => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatarDataHora(a.dataHora)}</td>
+                    <td>${a.acao}</td>
+                    <td>${a.detalhes}</td>
+                `;
+                tabela.appendChild(tr);
+            });
+        }
+        
+        // Função para gerar relatório detalhado
+        function gerarRelatorio(e) {
+            if (e) e.preventDefault();
+            
+            const ano = document.getElementById('relatorioAno').value;
+            const mes = document.getElementById('relatorioMes').value;
+            const data = document.getElementById('relatorioData').value;
+            
+            // Filtrar solicitações
+            let solicitacoesFiltradas = solicitacoes;
+            
+            if (ano) {
+                solicitacoesFiltradas = solicitacoesFiltradas.filter(s => s.ano === ano);
+            }
+            
+            if (mes) {
+                solicitacoesFiltradas = solicitacoesFiltradas.filter(s => s.mes === mes);
+            }
+            
+            if (data) {
+                solicitacoesFiltradas = solicitacoesFiltradas.filter(s => s.dataSolicitacao === data);
+            }
+            
+            // Atualizar estatísticas principais
+            document.getElementById('totalSolicitacoes').textContent = solicitacoesFiltradas.length;
+            
+            const finalizadas = solicitacoesFiltradas.filter(s => 
+                s.statusSolicitacao === 'FINALIZADO' || s.statusSolicitacao === 'ENTREGUE').length;
+            document.getElementById('solicitacoesFinalizadas').textContent = finalizadas;
+            
+            const pendentes = solicitacoesFiltradas.filter(s => 
+                s.statusSolicitacao !== 'FINALIZADO' && s.statusSolicitacao !== 'ENTREGUE').length;
+            document.getElementById('solicitacoesPendentes').textContent = pendentes;
+            
+            const taxaConclusao = solicitacoesFiltradas.length > 0 ? 
+                Math.round((finalizadas / solicitacoesFiltradas.length) * 100) : 0;
+            document.getElementById('taxaConclusao').textContent = `${taxaConclusao}%`;
+            
+            // Gerar todos os gráficos
+            gerarGraficoMotivos(solicitacoesFiltradas);
+            gerarGraficoStatus(solicitacoesFiltradas);
+            gerarGraficoDocumentos(solicitacoesFiltradas);
+            gerarGraficoRetirada(solicitacoesFiltradas);
+            gerarGraficoProdutividade(solicitacoesFiltradas);
+            gerarGraficoEvolucao(solicitacoesFiltradas);
+            
+            // Preencher tabela de detalhamento
+            preencherTabelaDetalhamento(solicitacoesFiltradas);
+        }
+        
+        // Função para gerar gráfico de motivos
+        function gerarGraficoMotivos(solicitacoes) {
+            const motivos = {};
+            
+            solicitacoes.forEach(s => {
+                if (motivos[s.motivo]) {
+                    motivos[s.motivo]++;
+                } else {
+                    motivos[s.motivo] = 1;
+                }
+            });
+            
+            const ctx = document.getElementById('motivoChart').getContext('2d');
+            
+            // Destruir gráfico anterior se existir
+            if (window.motivoChartInstance) {
+                window.motivoChartInstance.destroy();
+            }
+            
+            window.motivoChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(motivos),
+                    datasets: [{
+                        data: Object.values(motivos),
+                        backgroundColor: [
+                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
+                            '#1abc9c', '#34495e', '#d35400', '#7f8c8d'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribuição por Motivo'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Função para gerar gráfico de status
+        function gerarGraficoStatus(solicitacoes) {
+            const status = {};
+            
+            solicitacoes.forEach(s => {
+                if (status[s.statusSolicitacao]) {
+                    status[s.statusSolicitacao]++;
+                } else {
+                    status[s.statusSolicitacao] = 1;
+                }
+            });
+            
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            
+            // Destruir gráfico anterior se existir
+            if (window.statusChartInstance) {
+                window.statusChartInstance.destroy();
+            }
+            
+            window.statusChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(status),
+                    datasets: [{
+                        label: 'Quantidade',
+                        data: Object.values(status),
+                        backgroundColor: '#3498db',
+                        borderColor: '#2980b9',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Solicitações por Status'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Função para gerar gráfico de documentos
+        function gerarGraficoDocumentos(solicitacoes) {
+            const documentos = {};
+            
+            solicitacoes.forEach(s => {
+                if (documentos[s.docSolicitado]) {
+                    documentos[s.docSolicitado]++;
+                } else {
+                    documentos[s.docSolicitado] = 1;
+                }
+            });
+            
+            const ctx = document.getElementById('documentosChart').getContext('2d');
+            
+            // Destruir gráfico anterior se existir
+            if (window.documentosChartInstance) {
+                window.documentosChartInstance.destroy();
+            }
+            
+            window.documentosChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(documentos),
+                    datasets: [{
+                        data: Object.values(documentos),
+                        backgroundColor: [
+                            '#3498db', '#2ecc71', '#e74c3c'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Documentos Solicitados'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Função para gerar gráfico de formas de retirada
+        function gerarGraficoRetirada(solicitacoes) {
+            const formas = {};
+            
+            solicitacoes.forEach(s => {
+                if (formas[s.formaRetirada]) {
+                    formas[s.formaRetirada]++;
+                } else {
+                    formas[s.formaRetirada] = 1;
+                }
+            });
+            
+            const ctx = document.getElementById('retiradaChart').getContext('2d');
+            
+            // Destruir gráfico anterior se existir
+            if (window.retiradaChartInstance) {
+                window.retiradaChartInstance.destroy();
+            }
+            
+            window.retiradaChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(formas),
+                    datasets: [{
+                        data: Object.values(formas),
+                        backgroundColor: [
+                            '#3498db', '#2ecc71'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Formas de Retirada'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Função para gerar gráfico de produtividade por usuário
+        function gerarGraficoProdutividade(solicitacoes) {
+            const produtividade = {};
+            
+            solicitacoes.forEach(s => {
+                if (produtividade[s.loginUsuario]) {
+                    produtividade[s.loginUsuario]++;
+                } else {
+                    produtividade[s.loginUsuario] = 1;
+                }
+            });
+            
+            // Obter nomes completos dos usuários
+            const labels = Object.keys(produtividade).map(usuario => {
+                const user = usuarios.find(u => u.usuario === usuario);
+                return user ? user.nomeCompleto : usuario;
+            });
+            
+            const ctx = document.getElementById('produtividadeChart').getContext('2d');
+            
+            // Destruir gráfico anterior se existir
+            if (window.produtividadeChartInstance) {
+                window.produtividadeChartInstance.destroy();
+            }
+            
+            window.produtividadeChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Solicitações Realizadas',
+                        data: Object.values(produtividade),
+                        backgroundColor: '#1abc9c',
+                        borderColor: '#16a085',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Produtividade por Usuário'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Função para gerar gráfico de evolução
+        function gerarGraficoEvolucao(solicitacoes) {
+            const meses = [
+                "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
+                "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
+            ];
+            
+            const dados = Array(12).fill(0);
+            
+            solicitacoes.forEach(s => {
+                const index = meses.indexOf(s.mes);
+                if (index !== -1) {
+                    dados[index]++;
+                }
+            });
+            
+            const ctx = document.getElementById('evolucaoChart').getContext('2d');
+            
+            // Destruir gráfico anterior se existir
+            if (window.evolucaoChartInstance) {
+                window.evolucaoChartInstance.destroy();
+            }
+            
+            window.evolucaoChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: meses,
+                    datasets: [{
+                        label: 'Solicitações',
+                        data: dados,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#3498db',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Evolução Mensal de Solicitações'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Função para preencher tabela de detalhamento
+        function preencherTabelaDetalhamento(solicitacoes) {
+            const tabela = document.getElementById('detalhamentoTabela');
+            tabela.innerHTML = '';
+            
+            const total = solicitacoes.length;
+            
+            // Detalhamento por Motivo
+            const motivos = {};
+            solicitacoes.forEach(s => {
+                if (motivos[s.motivo]) {
+                    motivos[s.motivo]++;
+                } else {
+                    motivos[s.motivo] = 1;
+                }
+            });
+            
+            Object.keys(motivos).forEach(motivo => {
+                const quantidade = motivos[motivo];
+                const percentual = total > 0 ? ((quantidade / total) * 100).toFixed(1) : 0;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>Motivo</td>
+                    <td>${motivo}</td>
+                    <td>${quantidade}</td>
+                    <td>${percentual}%</td>
+                `;
+                tabela.appendChild(tr);
+            });
+            
+            // Detalhamento por Status
+            const status = {};
+            solicitacoes.forEach(s => {
+                if (status[s.statusSolicitacao]) {
+                    status[s.statusSolicitacao]++;
+                } else {
+                    status[s.statusSolicitacao] = 1;
+                }
+            });
+            
+            Object.keys(status).forEach(stat => {
+                const quantidade = status[stat];
+                const percentual = total > 0 ? ((quantidade / total) * 100).toFixed(1) : 0;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>Status</td>
+                    <td>${stat}</td>
+                    <td>${quantidade}</td>
+                    <td>${percentual}%</td>
+                `;
+                tabela.appendChild(tr);
+            });
+            
+            // Detalhamento por Documento
+            const documentos = {};
+            solicitacoes.forEach(s => {
+                if (documentos[s.docSolicitado]) {
+                    documentos[s.docSolicitado]++;
+                } else {
+                    documentos[s.docSolicitado] = 1;
+                }
+            });
+            
+            Object.keys(documentos).forEach(doc => {
+                const quantidade = documentos[doc];
+                const percentual = total > 0 ? ((quantidade / total) * 100).toFixed(1) : 0;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>Documento</td>
+                    <td>${doc}</td>
+                    <td>${quantidade}</td>
+                    <td>${percentual}%</td>
+                `;
+                tabela.appendChild(tr);
+            });
+            
+            // Detalhamento por Forma de Retirada
+            const formas = {};
+            solicitacoes.forEach(s => {
+                if (formas[s.formaRetirada]) {
+                    formas[s.formaRetirada]++;
+                } else {
+                    formas[s.formaRetirada] = 1;
+                }
+            });
+            
+            Object.keys(formas).forEach(forma => {
+                const quantidade = formas[forma];
+                const percentual = total > 0 ? ((quantidade / total) * 100).toFixed(1) : 0;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>Forma de Retirada</td>
+                    <td>${forma}</td>
+                    <td>${quantidade}</td>
+                    <td>${percentual}%</td>
+                `;
+                tabela.appendChild(tr);
+            });
+        }
+        
+        // Função para gerar PDF
+        function gerarPDF() {
+            const { jsPDF } = window.jspdf;
+            // Criar PDF em orientação paisagem (horizontal)
+            const doc = new jsPDF('landscape');
+            
+            // Cabeçalho
+            doc.setFontSize(20);
+            doc.setTextColor(40);
+            doc.text('SAME - HOSP. DE URGÊNCIA DE GOIÁS', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+            doc.setFontSize(16);
+            doc.text('Relatório de Solicitações Médicas', doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.setTextColor(100);
+            doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, doc.internal.pageSize.getWidth() / 2, 29, { align: 'center' });
+            
+            // Informações do relatório
+            const ano = document.getElementById('relatorioAno').value || 'Todos';
+            const mes = document.getElementById('relatorioMes').value || 'Todos';
+            const data = document.getElementById('relatorioData').value || 'Todas';
+            
+            doc.setFontSize(10);
+            doc.text(`Período: ${ano} - ${mes} - ${data}`, 14, 40);
+            
+            // Estatísticas
+            const total = document.getElementById('totalSolicitacoes').textContent;
+            const finalizadas = document.getElementById('solicitacoesFinalizadas').textContent;
+            const pendentes = document.getElementById('solicitacoesPendentes').textContent;
+            const taxa = document.getElementById('taxaConclusao').textContent;
+            
+            // Calcular estatísticas adicionais
+            const solicitacoesFiltradas = filtrarSolicitacoesParaRelatorio();
+            const mediaPorDia = calcularMediaPorDia(solicitacoesFiltradas);
+            const tempoMedioAtendimento = calcularTempoMedioAtendimento(solicitacoesFiltradas);
+            const usuarioMaisProdutivo = calcularUsuarioMaisProdutivo(solicitacoesFiltradas);
+            
+            doc.text(`Total de Solicitações: ${total}`, 14, 48);
+            doc.text(`Solicitações Finalizadas: ${finalizadas}`, 14, 54);
+            doc.text(`Solicitações Pendentes: ${pendentes}`, 14, 60);
+            doc.text(`Taxa de Conclusão: ${taxa}`, 14, 66);
+            doc.text(`Média por Dia: ${mediaPorDia}`, 14, 72);
+            doc.text(`Tempo Médio de Atendimento: ${tempoMedioAtendimento} dias`, 14, 78);
+            doc.text(`Usuário Mais Produtivo: ${usuarioMaisProdutivo}`, 14, 84);
+            
+            // Tabela de solicitações
+            const tableColumn = ["ID", "Data", "Paciente", "Motivo", "Status", "Usuário"];
+            const tableRows = [];
+            
+            solicitacoesFiltradas.forEach(s => {
+                const solicitacaoData = [
+                    s.id,
+                    formatarData(s.dataSolicitacao),
+                    s.nomePaciente,
+                    s.motivo,
+                    s.statusSolicitacao,
+                    s.loginUsuario
+                ];
+                tableRows.push(solicitacaoData);
+            });
+            
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: 95,
+                theme: 'grid',
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [52, 152, 219] }
+            });
+            
+            // Adicionar estatísticas por categoria
+            const finalY = doc.lastAutoTable.finalY + 10;
+            
+            if (finalY < doc.internal.pageSize.getHeight() - 50) {
+                doc.setFontSize(12);
+                doc.text('Estatísticas por Categoria', 14, finalY);
+                
+                // Estatísticas por motivo
+                const motivos = {};
+                solicitacoesFiltradas.forEach(s => {
+                    if (motivos[s.motivo]) {
+                        motivos[s.motivo]++;
+                    } else {
+                        motivos[s.motivo] = 1;
+                    }
+                });
+                
+                let yPos = finalY + 10;
+                Object.keys(motivos).forEach(motivo => {
+                    if (yPos < doc.internal.pageSize.getHeight() - 20) {
+                        const percentual = ((motivos[motivo] / solicitacoesFiltradas.length) * 100).toFixed(1);
+                        doc.setFontSize(9);
+                        doc.text(`${motivo}: ${motivos[motivo]} (${percentual}%)`, 14, yPos);
+                        yPos += 5;
+                    }
+                });
+            }
+            
+            // Salvar o PDF
+            doc.save(`relatorio_same_${new Date().toISOString().split('T')[0]}.pdf`);
+            
+            mostrarMensagem('PDF gerado com sucesso!', 'success');
+        }
+        
+        // Função para filtrar solicitações para o relatório
+        function filtrarSolicitacoesParaRelatorio() {
+            const ano = document.getElementById('relatorioAno').value;
+            const mes = document.getElementById('relatorioMes').value;
+            const data = document.getElementById('relatorioData').value;
+            
+            let solicitacoesFiltradas = solicitacoes;
+            
+            if (ano) {
+                solicitacoesFiltradas = solicitacoesFiltradas.filter(s => s.ano === ano);
+            }
+            
+            if (mes) {
+                solicitacoesFiltradas = solicitacoesFiltradas.filter(s => s.mes === mes);
+            }
+            
+            if (data) {
+                solicitacoesFiltradas = solicitacoesFiltradas.filter(s => s.dataSolicitacao === data);
+            }
+            
+            return solicitacoesFiltradas;
+        }
+        
+        // Função para calcular média por dia
+        function calcularMediaPorDia(solicitacoes) {
+            if (solicitacoes.length === 0) return '0';
+            
+            const datasUnicas = new Set(solicitacoes.map(s => s.dataSolicitacao));
+            const media = (solicitacoes.length / datasUnicas.size).toFixed(1);
+            
+            return media;
+        }
+        
+        // Função para calcular tempo médio de atendimento
+        function calcularTempoMedioAtendimento(solicitacoes) {
+            const solicitacoesFinalizadas = solicitacoes.filter(s => 
+                s.statusSolicitacao === 'FINALIZADO' && s.dataRetirada);
+            
+            if (solicitacoesFinalizadas.length === 0) return 'N/A';
+            
+            let totalDias = 0;
+            solicitacoesFinalizadas.forEach(s => {
+                const dataSolicitacao = new Date(s.dataSolicitacao);
+                const dataRetirada = new Date(s.dataRetirada);
+                const diferencaMs = dataRetirada - dataSolicitacao;
+                const diferencaDias = Math.ceil(diferencaMs / (1000 * 60 * 60 * 24));
+                totalDias += diferencaDias;
+            });
+            
+            return (totalDias / solicitacoesFinalizadas.length).toFixed(1);
+        }
+        
+        // Função para calcular usuário mais produtivo
+        function calcularUsuarioMaisProdutivo(solicitacoes) {
+            if (solicitacoes.length === 0) return 'N/A';
+            
+            const produtividade = {};
+            
+            solicitacoes.forEach(s => {
+                if (produtividade[s.loginUsuario]) {
+                    produtividade[s.loginUsuario]++;
+                } else {
+                    produtividade[s.loginUsuario] = 1;
+                }
+            });
+            
+            let usuarioMaisProdutivo = '';
+            let maxSolicitacoes = 0;
+            
+            Object.keys(produtividade).forEach(usuario => {
+                if (produtividade[usuario] > maxSolicitacoes) {
+                    maxSolicitacoes = produtividade[usuario];
+                    usuarioMaisProdutivo = usuario;
+                }
+            });
+            
+            // Obter nome completo do usuário
+            const user = usuarios.find(u => u.usuario === usuarioMaisProdutivo);
+            return user ? `${user.nomeCompleto} (${maxSolicitacoes} solicitações)` : `${usuarioMaisProdutivo} (${maxSolicitacoes} solicitações)`;
+        }
+        
+        // Função para mostrar ajuda
+        function mostrarAjuda() {
+            alert(
+                "SAME - HOSP. DE URGÊNCIA DE GOIÁS\n\n" +
+                "Sistema de Gestão de Solicitações Médicas\n\n" +
+                "Este sistema permite:\n" +
+                "- Cadastrar e acompanhar solicitações médicas\n" +
+                "- Gerar relatórios e métricas de produtividade\n" +
+                "- Gerenciar usuários e opções do sistema\n" +
+                "- Sincronização automática com Google Sheets\n\n" +
+                "Para mais informações, entre em contato com o administrador do sistema."
+            );
+        }
+        
+        // Função para mostrar mensagens personalizadas
+        function mostrarMensagem(mensagem, tipo) {
+            // Criar elemento de mensagem
+            const mensagemDiv = document.createElement('div');
+            mensagemDiv.className = `alert alert-${tipo === 'error' ? 'danger' : tipo} alert-dismissible fade show alert-custom`;
+            mensagemDiv.innerHTML = `
+                ${mensagem}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Adicionar ao corpo do documento
+            document.body.appendChild(mensagemDiv);
+            
+            // Remover automaticamente após 5 segundos
+            setTimeout(() => {
+                if (mensagemDiv.parentNode) {
+                    mensagemDiv.parentNode.removeChild(mensagemDiv);
+                }
+            }, 5000);
+        }
+        
+        // Funções utilitárias
+        function formatarData(data) {
+            if (!data) return '-';
+            const partes = data.split('-');
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+        
+        function formatarDataHora(dataHora) {
+            if (!dataHora) return '-';
+            const [data, hora] = dataHora.split(' ');
+            return `${formatarData(data)} ${hora}`;
+        }
+        
+        // Função para configurar validação de formulários
+        function configurarValidacaoFormularios() {
+            // Remover classes de validação ao digitar
+            const forms = document.querySelectorAll('.needs-validation');
+            
+            Array.from(forms).forEach(form => {
+                form.addEventListener('input', function(event) {
+                    if (event.target.classList.contains('is-invalid')) {
+                        event.target.classList.remove('is-invalid');
+                    }
+                });
+            });
+        }
+        
+        // Função para validar formulário
+        function validarFormulario(form) {
+            let isValid = true;
+            const inputs = form.querySelectorAll('input, select, textarea');
+            
+            inputs.forEach(input => {
+                if (input.hasAttribute('required') && !input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                } else if (input.type === 'email' && input.value.trim() && !validarEmail(input.value)) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+            
+            return isValid;
+        }
+        
+        // Função para validar e-mail
+        function validarEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        // Função para atualizar ano e mês automaticamente
+        function atualizarAnoMes() {
+            const dataAtual = new Date();
+            const ano = dataAtual.getFullYear();
+            const meses = [
+                "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
+                "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
+            ];
+            const mes = meses[dataAtual.getMonth()];
+            
+            document.getElementById('ano').value = ano;
+            document.getElementById('mes').value = mes;
+        }
+    </script>
+</body>
+</html>
